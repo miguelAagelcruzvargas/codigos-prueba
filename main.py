@@ -1,163 +1,790 @@
+# import cv2
+# import tkinter as tk
+# from PIL import Image, ImageTk
+# import os
+# from tkinter import messagebox
+# import dlib
+# import pickle
+# import re
+# import face_recognition
+# import numpy as np
 
-from tkinter import Entry, Label, Frame, Tk, Button,ttk, Scrollbar, VERTICAL, HORIZONTAL,StringVar,END
+# def cargar_etiquetas():
+#     etiquetas_utilizadas = {}
+#     try:
+#         with open("etiquetas.txt", "r") as file:
+#             for line in file:
+#                 etiqueta, numero = line.strip().split(":")
+#                 etiquetas_utilizadas[etiqueta] = int(numero)
+#     except FileNotFoundError:
+#         pass
+#     return etiquetas_utilizadas
+
+# def guardar_etiquetas(etiquetas_utilizadas):
+#     etiquetas_actuales = cargar_etiquetas()
+#     etiquetas_actuales.update(etiquetas_utilizadas)
+#     with open("etiquetas.txt", "w") as file:
+#         for etiqueta, numero in etiquetas_actuales.items():
+#             file.write(f"{etiqueta}:{numero}\n")
+
+# def guardar_nueva_imagen(etiqueta):
+#     etiquetas_utilizadas = cargar_etiquetas()
+#     if etiqueta in etiquetas_utilizadas:
+#         nuevo_numero = etiquetas_utilizadas[etiqueta] + 1
+#     else:
+#         nuevo_numero = 1
+#     etiquetas_utilizadas[etiqueta] = nuevo_numero
+#     guardar_etiquetas(etiquetas_utilizadas)
+#     return nuevo_numero
+
+# def get_button(window, text, color, command, fg='white'):
+#     button = tk.Button(
+#                         window,
+#                         text=text,
+#                         activebackground="black",
+#                         activeforeground="white",
+#                         fg=fg,
+#                         bg=color,
+#                         command=command,
+#                         height=2,
+#                         width=20,
+#                         font=('Helvetica bold', 20)
+#                     )
+#     return button
+
+# def get_img_label(window):
+#     label = tk.Label(window)
+#     label.grid(row=0, column=0)
+#     return label
+
+# def get_text_label(window, text):
+#     label = tk.Label(window, text=text)
+#     label.config(font=("sans-serif", 21), justify="left")
+#     return label
+
+# def get_entry_text(window):
+#     inputtxt = tk.Text(window, height=2, width=15, font=("Arial", 32))
+#     return inputtxt
+
+# def msg_box(title, description):
+#     messagebox.showinfo(title, description)
+
+# def recognize(img, db_path):
+#     embeddings_unknown = face_recognition.face_encodings(img)
+#     if len(embeddings_unknown) == 0:
+#         return 'no_persons_found'
+#     else:
+#         embeddings_unknown = embeddings_unknown[0]
+
+#     db_dir = sorted(os.listdir(db_path))
+
+#     match = False
+#     j = 0
+#     while not match and j < len(db_dir):
+#         path_ = os.path.join(db_path, db_dir[j])
+#         with open(path_, 'rb') as file:
+#             embeddings = pickle.load(file)
+
+#         match = face_recognition.compare_faces([embeddings], embeddings_unknown, tolerance=0.4)[0]
+#         j += 1
+
+#     if match:
+#         return db_dir[j - 1][:-7]
+#     else:
+#         return 'unknown_person'
+
+# detector = dlib.get_frontal_face_detector()
+# predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+
+# class App:
+#     def __init__(self, window):
+#         self.window = window
+#         self.window.bind('<ButtonPress-1>', self.start_drag)
+#         self.window.bind('<ButtonRelease-1>', self.stop_drag)
+#         self.window.bind('<B1-Motion>', self.on_drag)
+#         self.etiquetas_utilizadas = cargar_etiquetas()
+#         self.window.overrideredirect(True)
+#         self.window.configure(bg='black')
+
+#         screen_width = self.window.winfo_screenwidth()
+#         screen_height = self.window.winfo_screenheight()
+#         window_width = 640
+#         window_height = 580
+#         x = (screen_width - window_width) // 2
+#         y = (screen_height - window_height) // 2
+
+#         self.window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+#         self.window.attributes('-topmost', True)
+
+#         self.title_label = tk.Label(window, text="Sistema de Fotos", font=('Arial', 19, 'bold'), bg='green3')
+#         self.title_label.pack(side=tk.TOP, pady=3)
+
+#         self.video_source =  0 #"http://192.168.1.2:8080/video"  # URL de la cámara IP
+#         self.vid = cv2.VideoCapture(self.video_source)
+#         max_width = self.get_max_resolution_width()
+#         max_height = self.get_max_resolution_height()
+        
+#         if max_width > 0 and max_height > 0:
+#             self.vid.set(cv2.CAP_PROP_FRAME_WIDTH, max_width)
+#             self.vid.set(cv2.CAP_PROP_FRAME_HEIGHT, max_height)
+#             print(f"Resolución máxima establecida: {max_width}x{max_height}")
+#         else:
+#             print("No se pudieron obtener las resoluciones máximas admitidas.")
+            
+#         self.canvas = tk.Canvas(window, width=640, height=480, bg='black') 
+#         self.canvas.pack()
+        
+#         self.btn_capture = tk.Button(window, text="Capture", width=10, command=self.capture, bg='blue', fg='white', font=('Arial', 12), bd=3, relief=tk.RIDGE, borderwidth=5)
+#         self.btn_capture.pack(side=tk.LEFT, padx=10, pady=10)
+
+#         self.lbl_etiqueta = tk.Label(window, text="RFC:", bg='green3', font=('Arial', 12))
+#         self.lbl_etiqueta.pack(side=tk.LEFT, padx=(0, 10), pady=10)
+#         self.entry_etiqueta = tk.Entry(window, font=('Arial', 12))
+#         self.entry_etiqueta.pack(side=tk.LEFT, pady=10)
+
+#         self.btn_exit = tk.Button(window, text="Exit", width=10, command=self.confirm_exit, bg='red', fg='white', font=('Arial', 12), bd=3, relief=tk.RIDGE, borderwidth=5)
+#         self.btn_exit.pack(side=tk.RIGHT, padx=10, pady=10)
+#         self.delay = 10
+
+#         self.contador = 0
+#         self.prev_faces = []
+
+#         self.update()
+
+#         self.directoriorostros = 'rostros_capturados'
+#         if not os.path.exists(self.directoriorostros):
+#             os.makedirs(self.directoriorostros)
+
+#         self.directorio_pickle = 'imagenes_pickle'
+#         if not os.path.exists(self.directorio_pickle):
+#             os.makedirs(self.directorio_pickle)
+
+#         self.x = 0
+#         self.y = 0
+
+#         self.window.bind('<ButtonPress-1>', self.start_drag)
+#         self.window.bind('<ButtonRelease-1>', self.stop_drag)
+#         self.window.bind('<B1-Motion>', self.on_drag)
+    
+#     def get_max_resolution_width(self):
+#         return int(self.vid.get(cv2.CAP_PROP_FRAME_WIDTH))
+    
+#     def get_max_resolution_height(self):
+#         return int(self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+#     def confirm_exit(self):
+#         confirm = messagebox.askokcancel("Salir", "¿Estás seguro de que quieres salir de la aplicación?")
+#         if confirm:
+#             if self.vid.isOpened():
+#                 self.vid.release()
+#             self.window.quit()
+
+#     def update(self):
+#         ret, frame = self.vid.read()
+#         if ret:
+#             frame = cv2.flip(frame, 1)
+#             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+#             faces = detector(gray)
+            
+#             for face in faces:
+#                 x, y, w, h = face.left(), face.top(), face.width(), face.height()
+                
+#                 expand_x = int(0.1 * w)
+#                 expand_y = int(0.1 * h)
+                
+#                 x = max(0, x - expand_x)
+#                 y = max(0, y - expand_y)
+#                 w += 2 * expand_x
+#                 h += 2 * expand_y
+                
+#                 w = min(frame.shape[1] - x, w)
+#                 h = min(frame.shape[0] - y, h)
+
+#                 cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 255, 255), 1)
+
+#                 landmarks = predictor(gray, face)
+
+#             self.photo = ImageTk.PhotoImage(image=Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
+#             self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
+
+#             self.window.after(self.delay, self.update)
+
+#     def validar_rfc(self, rfc):
+#         return bool(re.match(r'^[A-Za-z0-9]{13}$', rfc))
+
+#     def rfc_existe(self, rfc):
+#         return os.path.exists(os.path.join(self.directoriorostros, f'{rfc}.jpg'))
+
+#     def capture(self):
+#         ret, frame = self.vid.read()
+#         frame = cv2.flip(frame, 1)
+#         if ret:
+#             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+#             faces = detector(gray)
+
+#             if len(faces) > 0:
+#                 face = faces[0]
+#                 x, y, w, h = face.left(), face.top(), face.width(), face.height()
+
+#                 landmarks = predictor(gray, face)
+
+#                 forehead_point = (landmarks.part(27).x, landmarks.part(27).y - 70)
+#                 chin_point = (landmarks.part(8).x, landmarks.part(8).y + 15)
+
+#                 scale_factor_x = 0.5
+#                 scale_factor_y = 0.5
+                
+#                 roi_x = max(0, x - int(w * scale_factor_x))
+#                 roi_y = max(0, y - int(h * scale_factor_y))
+#                 roi_width = min(frame.shape[1] - roi_x, int(w * (1 + 2 * scale_factor_x)))
+#                 roi_height = min(frame.shape[0] - roi_y, int(h * (1 + 2 * scale_factor_y)))
+
+#                 roi_y = max(0, roi_y)
+#                 roi_height = min(frame.shape[0] - roi_y, roi_height)
+
+#                 roi = frame[roi_y:roi_y + roi_height, roi_x:roi_x + roi_width]
+
+#                 self.update_capture_button_color('green')
+
+#                 self.show_preview(roi)
+#             else:
+#                 messagebox.showwarning("Sin rostros", "No se detectaron caras.")
+#                 self.update_capture_button_color('red')
+#         else:
+#             messagebox.showwarning("Error", "No se pudo capturar el fotograma.")
+#             self.update_capture_button_color('red')
+
+#     def show_preview(self, rostro):
+#         self.preview_window = tk.Toplevel(self.window)
+#         self.preview_window.overrideredirect(True)
+#         self.preview_window.configure(bg='blue4')
+
+#         window_width = 260
+#         window_height = 320
+#         self.preview_window.geometry(f"{window_width}x{window_height}")
+
+#         x = self.window.winfo_x() + (self.window.winfo_width() - window_width) // 2
+#         y = self.window.winfo_y() + (self.window.winfo_height() - window_height) // 2
+
+#         self.preview_window.geometry(f"+{x}+{y}")
+#         self.preview_window.attributes('-topmost', True)
+
+#         resized_image = cv2.resize(rostro, (window_width, window_height - 48))
+
+#         image_pil = Image.fromarray(cv2.cvtColor(resized_image, cv2.COLOR_BGR2RGB))
+#         photo = ImageTk.PhotoImage(image=image_pil)
+
+#         label = tk.Label(self.preview_window, image=photo, bg='white')
+#         label.image = photo
+#         label.pack()
+
+#         btn_guardar = tk.Button(self.preview_window, text="Guardar", command=lambda: self.save_image(rostro), bg='green', fg='white', font=('Arial', 12))
+#         btn_guardar.pack(side=tk.LEFT, padx=10, pady=1)
+
+#         btn_volver = tk.Button(self.preview_window, text="Volver a Capturar", command=self.close_preview_window, bg='red', fg='white', font=('Arial', 12))
+#         btn_volver.pack(side=tk.RIGHT, padx=10, pady=1)
+
+#         btn_guardar.bind("<Enter>", lambda event, button=btn_guardar: button.config(bg='light green'))
+#         btn_guardar.bind("<Leave>", lambda event, button=btn_guardar: button.config(bg='green'))
+#         btn_volver.bind("<Enter>", lambda event, button=btn_volver: button.config(bg='pink'))
+#         btn_volver.bind("<Leave>", lambda event, button=btn_volver: button.config(bg='red'))
+
+#         btn_guardar.bind("<Button-1>", lambda event, button=btn_guardar: button.config(bg='dark green'))
+#         btn_guardar.bind("<ButtonRelease-1>", lambda event, button=btn_guardar: button.config(bg='light green'))
+#         btn_volver.bind("<Button-1>", lambda event, button=btn_volver: button.config(bg='dark red'))
+#         btn_volver.bind("<ButtonRelease-1>", lambda event, button=btn_volver: button.config(bg='red'))
+
+#     def preprocess_image(self, rostro):
+#         ycrcb_img = cv2.cvtColor(rostro, cv2.COLOR_BGR2YCrCb)
+#         clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+#         ycrcb_img[:, :, 0] = clahe.apply(ycrcb_img[:, :, 0])
+#         processed_image = cv2.cvtColor(ycrcb_img, cv2.COLOR_YCrCb2BGR)
+#         return processed_image
+
+#     def save_image(self, rostro):
+#         etiqueta = self.entry_etiqueta.get().strip()
+
+#         if not etiqueta:
+#             messagebox.showwarning("Campo vacío", "El campo RFC no puede estar vacío.")
+#             self.update_capture_button_color('red')
+#             return
+
+#         if not self.validar_rfc(etiqueta):
+#             messagebox.showwarning("RFC inválido", "El RFC debe tener 13 caracteres alfanuméricos.")
+#             self.update_capture_button_color('red')
+#             return
+
+#         etiqueta = etiqueta.strip()
+
+#         ruta_imagen = f'{self.directoriorostros}/{etiqueta}.jpg'
+#         ruta_pickle = f'{self.directorio_pickle}/{etiqueta}.pickle'
+
+#         if os.path.exists(ruta_imagen):
+#             confirm = messagebox.askyesno("RFC duplicado", "Ya existe una imagen guardada con este RFC. ¿Desea actualizar la foto?")
+#             if not confirm:
+#                 self.update_capture_button_color('red')
+#                 return
+
+#         if not os.path.exists(self.directoriorostros):
+#             os.makedirs(self.directoriorostros)
+
+#         if not os.path.exists(self.directorio_pickle):
+#             os.makedirs(self.directorio_pickle)
+            
+#         rostro = self.preprocess_image(rostro)
+
+#         cv2.imwrite(ruta_imagen, rostro)
+
+#         embeddings = face_recognition.face_encodings(rostro)
+#         if len(embeddings) > 0:
+#             with open(ruta_pickle, 'wb') as f:
+#                 pickle.dump(embeddings[0], f)
+
+#             self.contador += 1
+#             messagebox.showinfo("Captura Exitosa", "Rostro guardado correctamente.")
+#         else:
+#             messagebox.showwarning("Error", "No se pudieron obtener embeddings del rostro.")
+
+#         self.close_preview_window()
+
+#     def close_preview_window(self):
+#         if hasattr(self, 'preview_window'):
+#             self.preview_window.destroy()
+#             self.update_capture_button_color('red')
+
+#     def update_capture_button_color(self, color):
+#         self.btn_capture.config(bg=color)
+
+#     def start_drag(self, event):
+#         self.x = event.x
+#         self.y = event.y
+
+#     def stop_drag(self, event):
+#         self.x = None
+#         self.y = None
+
+#     def on_drag(self, event):
+#         deltax = event.x - self.x
+#         deltay = event.y - self.y
+#         x = self.window.winfo_x() + deltax
+#         y = self.window.winfo_y() + deltay
+#         self.window.geometry(f"+{x}+{y}")
+
+# if __name__ == '__main__':
+#     root = tk.Tk()
+#     app = App(root)
+#     root.mainloop()
+
+
+
+# este si srive
+import cv2
+import tkinter as tk
+from PIL import Image, ImageTk
+import os
 from tkinter import messagebox
+import dlib
+import pickle
+import re
+import face_recognition
+import numpy as np
 
-from conexion import Registro_datos 
 
-db = Registro_datos()
+import util  # Asegúrate de que util.py está en tu directorio y contiene las funciones necesarias
+from test import test  # Importa la función test desde tu módulo de anti-spoofing
 
-class Registro(Frame):
-    def __init__(self, master, *args, **kwargs):
-        super().__init__(master, *args, **kwargs)
-                                    
-        self.frame1 = Frame(master)
-        self.frame1.grid(columnspan=2, column=0,row=0)
-        self.frame2 = Frame(master, bg='navy')
-        self.frame2.grid(column=0, row=1)
-        self.frame3 = Frame(master)
-        self.frame3.grid(rowspan=2, column=1, row=1)
+def cargar_etiquetas():
+    etiquetas_utilizadas = {}
+    try:
+        with open("etiquetas.txt", "r") as file:
+            for line in file:
+                etiqueta, numero = line.strip().split(":")
+                etiquetas_utilizadas[etiqueta] = int(numero)
+    except FileNotFoundError:
+        pass
+    return etiquetas_utilizadas
 
-        self.frame4 = Frame(master, bg='black')
-        self.frame4.grid(column=0, row=2)
+def guardar_etiquetas(etiquetas_utilizadas):
+    etiquetas_actuales = cargar_etiquetas()
+    etiquetas_actuales.update(etiquetas_utilizadas)
+    with open("etiquetas.txt", "w") as file:
+        for etiqueta, numero in etiquetas_actuales.items():
+            file.write(f"{etiqueta}:{numero}\n")
 
-        self.codigo = StringVar()
-        self.nombre = StringVar()
-        self.modelo = StringVar()
-        self.precio = StringVar()
-        self.cantidad = StringVar()
-        self.buscar = StringVar()
+def guardar_nueva_imagen(etiqueta):
+    etiquetas_utilizadas = cargar_etiquetas()
+    if etiqueta in etiquetas_utilizadas:
+        nuevo_numero = etiquetas_utilizadas[etiqueta] + 1
+    else:
+        nuevo_numero = 1
+    etiquetas_utilizadas[etiqueta] = nuevo_numero
+    guardar_etiquetas(etiquetas_utilizadas)
+    return nuevo_numero
 
-        self.base_datos = Registro_datos()
-        self.create_widgets()
+def get_button(window, text, color, command, fg='white'):
+    button = tk.Button(
+                        window,
+                        text=text,
+                        activebackground="black",
+                        activeforeground="white",
+                        fg=fg,
+                        bg=color,
+                        command=command,
+                        height=2,
+                        width=20,
+                        font=('Helvetica bold', 20)
+                    )
+    return button
 
-    def create_widgets(self):
-        Label(self.frame1, text = 'R E G I S T R O \t D E \t D A T O S',bg='gray22',fg='white', font=('Orbitron',15,'bold')).grid(column=0, row=0)
+def get_img_label(window):
+    label = tk.Label(window)
+    label.grid(row=0, column=0)
+    return label
+
+def get_text_label(window, text):
+    label = tk.Label(window, text=text)
+    label.config(font=("sans-serif", 21), justify="left")
+    return label
+
+def get_entry_text(window):
+    inputtxt = tk.Text(window, height=2, width=15, font=("Arial", 32))
+    return inputtxt
+
+def msg_box(title, description):
+    messagebox.showinfo(title, description)
+
+def recognize(img, db_path, tolerance=0.4):  # Ajusta el umbral aquí
+    embeddings_unknown = face_recognition.face_encodings(img)
+    if len(embeddings_unknown) == 0:
+        return 'no_persons_found'
+    else:
+        embeddings_unknown = embeddings_unknown[0]
+
+    db_dir = sorted(os.listdir(db_path))
+
+    match = False
+    j = 0
+    closest_distance = float('inf')
+    closest_match = None
+    
+    while not match and j < len(db_dir):
+        path_ = os.path.join(db_path, db_dir[j])
+
+        with open(path_, 'rb') as file:
+            embeddings = pickle.load(file)
+
+        distance = np.linalg.norm(embeddings - embeddings_unknown)
+        if distance < closest_distance:
+            closest_distance = distance
+            closest_match = db_dir[j]
+
+        match = distance < tolerance
+        j += 1
+
+    if match:
+        return closest_match[:-7]
+    else:
+        return 'unknown_person'
+
+detector = dlib.get_frontal_face_detector()
+predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+
+class App:
+    def __init__(self, window):
+        self.window = window
+        self.window.bind('<ButtonPress-1>', self.start_drag)
+        self.window.bind('<ButtonRelease-1>', self.stop_drag)
+        self.window.bind('<B1-Motion>', self.on_drag)
+        self.etiquetas_utilizadas = cargar_etiquetas()
+        self.window.overrideredirect(True)
+        self.window.configure(bg='black')
+
+        screen_width = self.window.winfo_screenwidth()
+        screen_height = self.window.winfo_screenheight()
+        window_width = 640
+        window_height = 580
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+
+        self.window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+        self.window.attributes('-topmost', True)
+
+        self.title_label = tk.Label(window, text="Sistema de Fotos", font=('Arial', 19, 'bold'), bg='green3')
+        self.title_label.pack(side=tk.TOP, pady=3)
+
+        self.video_source =  0 #"http://192.168.1.2:8080/video"  # URL de la cámara IP
+        self.vid = cv2.VideoCapture(self.video_source)
+        max_width = self.get_max_resolution_width()
+        max_height = self.get_max_resolution_height()
         
-        
-        Label(self.frame2, text = 'Agregar Nuevos Datos',fg='white', bg ='navy', font=('Rockwell',12,'bold')).grid(columnspan=2, column=0,row=0, pady=5)
-        Label(self.frame2, text = 'Codigo',fg='white', bg ='navy', font=('Rockwell',13,'bold')).grid(column=0,row=1, pady=15)
-        Label(self.frame2, text = 'Nombre',fg='white', bg ='navy', font=('Rockwell',13,'bold')).grid(column=0,row=2, pady=15)
-        Label(self.frame2, text = 'Modelo',fg='white', bg ='navy', font=('Rockwell',13,'bold')).grid(column=0,row=3, pady=15)
-        Label(self.frame2, text = 'Precio', fg='white',bg ='navy', font=('Rockwell',13,'bold')).grid(column=0,row=4, pady=15)
-        Label(self.frame2, text = 'Cantidad',fg='white', bg ='navy', font=('Rockwell',13,'bold')).grid(column=0,row=5, pady=15)
-
-        Entry(self.frame2,textvariable=self.codigo , font=('Arial',12)).grid(column=1,row=1, padx =5)
-        Entry(self.frame2,textvariable=self.nombre , font=('Arial',12)).grid(column=1,row=2)
-        Entry(self.frame2,textvariable=self.modelo , font=('Arial',12)).grid(column=1,row=3)
-        Entry(self.frame2,textvariable=self.precio , font=('Arial',12)).grid(column=1,row=4)
-        Entry(self.frame2,textvariable=self.cantidad , font=('Arial',12)).grid(column=1,row=5)
-       
-        Label(self.frame4, text = 'Control',fg='white', bg ='black', font=('Rockwell',12,'bold')).grid(columnspan=3, column=0,row=0, pady=1, padx=4)         
-        Button(self.frame4,command= self.agregar_datos, text='REGISTRAR', font=('Arial',10,'bold'), bg='magenta2').grid(column=0,row=1, pady=10, padx=4)
-        Button(self.frame4,command = self.limpiar_datos, text='LIMPIAR', font=('Arial',10,'bold'), bg='orange red').grid(column=1,row=1, padx=10)        
-        Button(self.frame4,command = self.eliminar_fila, text='ELIMINAR', font=('Arial',10,'bold'), bg='yellow').grid(column=2,row=1, padx=4)
-        Button(self.frame4,command = self.buscar_nombre, text='BUSCAR POR NOMBRE', font=('Arial',8,'bold'), bg='orange').grid(columnspan=2,column = 1, row=2)
-        Entry(self.frame4,textvariable=self.buscar , font=('Arial',12), width=10).grid(column=0,row=2, pady=1, padx=8)
-        Button(self.frame4,command = self.mostrar_todo, text='MOSTRAR TODO', font=('Arial',10,'bold'), bg='green2').grid(columnspan=3,column=0,row=3, pady=8)
-
-
-        self.tabla = ttk.Treeview(self.frame3, height=21)
-        self.tabla.grid(column=0, row=0)
-
-        ladox = Scrollbar(self.frame3, orient = HORIZONTAL, command= self.tabla.xview)
-        ladox.grid(column=0, row = 1, sticky='ew') 
-        ladoy = Scrollbar(self.frame3, orient =VERTICAL, command = self.tabla.yview)
-        ladoy.grid(column = 1, row = 0, sticky='ns')
-
-        self.tabla.configure(xscrollcommand = ladox.set, yscrollcommand = ladoy.set)
-       
-        self.tabla['columns'] = ('Nombre', 'Modelo', 'Precio', 'Cantidad')
-
-        self.tabla.column('#0', minwidth=100, width=120, anchor='center')
-        self.tabla.column('Nombre', minwidth=100, width=130 , anchor='center')
-        self.tabla.column('Modelo', minwidth=100, width=120, anchor='center' )
-        self.tabla.column('Precio', minwidth=100, width=120 , anchor='center')
-        self.tabla.column('Cantidad', minwidth=100, width=105, anchor='center')
-
-        self.tabla.heading('#0', text='Codigo', anchor ='center')
-        self.tabla.heading('Nombre', text='Nombre', anchor ='center')
-        self.tabla.heading('Modelo', text='Modelo', anchor ='center')
-        self.tabla.heading('Precio', text='Precio', anchor ='center')
-        self.tabla.heading('Cantidad', text='Cantidad', anchor ='center')
-
-
-        estilo = ttk.Style(self.frame3)
-        estilo.theme_use('alt') #  ('clam', 'alt', 'default', 'classic')
-        estilo.configure(".",font= ('Helvetica', 12, 'bold'), foreground='red2')        
-        estilo.configure("Treeview", font= ('Helvetica', 10, 'bold'), foreground='black',  background='white')
-        estilo.map('Treeview',background=[('selected', 'green2')], foreground=[('selected','black')] )
-
-        self.tabla.bind("<<TreeviewSelect>>", self.obtener_fila)  # seleccionar  fila
-        
-
-    def agregar_datos(self):
-        self.tabla.get_children()
-        codigo = self.codigo.get()
-        nombre = self.nombre.get()
-        modelo = self.modelo.get()
-        precio = self.precio.get()
-        cantidad = self.cantidad.get()
-        datos = (nombre, modelo, precio, cantidad)
-        if codigo and nombre and modelo and precio and cantidad !='':        
-            self.tabla.insert('',0, text = codigo, values=datos)
-            self.base_datos.inserta_producto(codigo, nombre, modelo, precio, cantidad)
-
-
-    def limpiar_datos(self):
-        self.tabla.delete(*self.tabla.get_children())
-        self.codigo.set('')
-        self.nombre.set('')
-        self.modelo.set('')
-        self.precio.set('')
-        self.cantidad.set('')
-
-    def buscar_nombre(self):
-        nombre_producto = self.buscar.get().strip()
-        if nombre_producto:
-            nombre_buscado = self.base_datos.busca_producto(nombre_producto)
-            self.tabla.delete(*self.tabla.get_children())
-            for i, dato in enumerate(nombre_buscado):
-                self.tabla.insert('', 'end', text=dato[1], values=dato[2:6])
+        if max_width > 0 and max_height > 0:
+            self.vid.set(cv2.CAP_PROP_FRAME_WIDTH, max_width)
+            self.vid.set(cv2.CAP_PROP_FRAME_HEIGHT, max_height)
+            print(f"Resolución máxima establecida: {max_width}x{max_height}")
         else:
-            messagebox.showerror("Error", "Ingrese un nombre para buscar.")
+            print("No se pudieron obtener las resoluciones máximas admitidas.")
+            
+        self.canvas = tk.Canvas(window, width=640, height=480, bg='black') 
+        self.canvas.pack()
+        
+        self.btn_capture = tk.Button(window, text="Capture", width=10, command=self.capture, bg='blue', fg='white', font=('Arial', 12), bd=3, relief=tk.RIDGE, borderwidth=5)
+        self.btn_capture.pack(side=tk.LEFT, padx=10, pady=10)
 
+        self.lbl_etiqueta = tk.Label(window, text="RFC:", bg='green3', font=('Arial', 12))
+        self.lbl_etiqueta.pack(side=tk.LEFT, padx=(0, 10), pady=10)
+        self.entry_etiqueta = tk.Entry(window, font=('Arial', 12))
+        self.entry_etiqueta.pack(side=tk.LEFT, pady=10)
 
+        self.btn_exit = tk.Button(window, text="Exit", width=10, command=self.confirm_exit, bg='red', fg='white', font=('Arial', 12), bd=3, relief=tk.RIDGE, borderwidth=5)
+        self.btn_exit.pack(side=tk.RIGHT, padx=10, pady=10)
+        self.delay = 10
 
-    def mostrar_todo(self):
-        self.tabla.delete(*self.tabla.get_children())
-        registro = self.base_datos.mostrar_productos()
-        i = -1
-        for dato in registro:
-            i= i+1                       
-            self.tabla.insert('',i, text = registro[i][1:2], values=registro[i][2:6])
+        self.contador = 0
+        self.prev_faces = []
 
+        self.update()
 
-    def eliminar_fila(self):
-        fila = self.tabla.selection()
-        if fila:
-            item = self.tabla.item(fila)
-            nombre = item['values'][0]
-            self.base_datos.elimina_productos(nombre)
-            self.tabla.delete(fila)
+        self.directoriorostros = 'rostros_capturados'
+        if not os.path.exists(self.directoriorostros):
+            os.makedirs(self.directoriorostros)
 
+        self.directorio_pickle = 'imagenes_pickle'
+        if not os.path.exists(self.directorio_pickle):
+            os.makedirs(self.directorio_pickle)
 
-    def obtener_fila(self, event):
-        current_item = self.tabla.focus()
-        if not current_item:
+        self.x = 0
+        self.y = 0
+
+        self.window.bind('<ButtonPress-1>', self.start_drag)
+        self.window.bind('<ButtonRelease-1>', self.stop_drag)
+        self.window.bind('<B1-Motion>', self.on_drag)
+    
+    def get_max_resolution_width(self):
+        return int(self.vid.get(cv2.CAP_PROP_FRAME_WIDTH))
+    
+    def get_max_resolution_height(self):
+        return int(self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+    def confirm_exit(self):
+        confirm = messagebox.askokcancel("Salir", "¿Estás seguro de que quieres salir de la aplicación?")
+        if confirm:
+            if self.vid.isOpened():
+                self.vid.release()
+            self.window.quit()
+
+    def update(self):
+        ret, frame = self.vid.read()
+        if ret:
+            frame = cv2.flip(frame, 1)
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces = detector(gray)
+            
+            for face in faces:
+                x, y, w, h = face.left(), face.top(), face.width(), face.height()
+                
+                expand_x = int(0.1 * w)
+                expand_y = int(0.1 * h)
+                
+                x = max(0, x - expand_x)
+                y = max(0, y - expand_y)
+                w += 2 * expand_x
+                h += 2 * expand_y
+                
+                w = min(frame.shape[1] - x, w)
+                h = min(frame.shape[0] - y, h)
+
+                cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 255, 255), 1)
+
+                landmarks = predictor(gray, face)
+
+            self.photo = ImageTk.PhotoImage(image=Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
+            self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
+
+            self.window.after(self.delay, self.update)
+
+    def validar_rfc(self, rfc):
+        return bool(re.match(r'^[A-Za-z0-9]{13}$', rfc))
+
+    def rfc_existe(self, rfc):
+        return os.path.exists(os.path.join(self.directoriorostros, f'{rfc}.jpg'))
+
+    def capture(self):
+        ret, frame = self.vid.read()
+        frame = cv2.flip(frame, 1)
+        if ret:
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces = detector(gray)
+
+            if len(faces) > 0:
+                face = faces[0]
+                x, y, w, h = face.left(), face.top(), face.width(), face.height()
+
+                landmarks = predictor(gray, face)
+
+                forehead_point = (landmarks.part(27).x, landmarks.part(27).y - 70)
+                chin_point = (landmarks.part(8).x, landmarks.part(8).y + 15)
+
+                scale_factor_x = 0.5
+                scale_factor_y = 0.5
+                
+                roi_x = max(0, x - int(w * scale_factor_x))
+                roi_y = max(0, y - int(h * scale_factor_y))
+                roi_width = min(frame.shape[1] - roi_x, int(w * (1 + 2 * scale_factor_x)))
+                roi_height = min(frame.shape[0] - roi_y, int(h * (1 + 2 * scale_factor_y)))
+
+                roi_y = max(0, roi_y)
+                roi_height = min(frame.shape[0] - roi_y, roi_height)
+
+                roi = frame[roi_y:roi_y + roi_height, roi_x:roi_x + roi_width]
+
+                # Aquí se realiza la verificación anti-spoofing antes de guardar la imagen
+                roi = self.ensure_aspect_ratio(roi, target_ratio=(4, 3))
+                label = test(
+                    image=roi,
+                    model_dir='./resources/anti_spoof_models',
+                    device_id=0
+                )
+
+                if label == 1:
+                    self.update_capture_button_color('green')
+                    self.show_preview(roi)
+                else:
+                    self.update_capture_button_color('red')
+                    messagebox.showwarning("No nos puedes engañar!", "No uses fotos!")
+            else:
+                messagebox.showwarning("Sin rostros", "No se detectaron caras.")
+                self.update_capture_button_color('red')
+        else:
+            messagebox.showwarning("Error", "No se pudo capturar el fotograma.")
+            self.update_capture_button_color('red')
+
+    def ensure_aspect_ratio(self, image, target_ratio=(4, 3)):
+        current_height, current_width = image.shape[:2]
+        target_width = int(current_height * target_ratio[1] / target_ratio[0])
+        
+        if current_width != target_width:
+            # Redimensionar la imagen para que cumpla con la relación de aspecto 4:3
+            new_image = cv2.resize(image, (target_width, current_height))
+            return new_image
+        return image
+
+    def show_preview(self, rostro):
+        self.preview_window = tk.Toplevel(self.window)
+        self.preview_window.overrideredirect(True)
+        self.preview_window.configure(bg='blue4')
+
+        window_width = 260
+        window_height = 320
+        self.preview_window.geometry(f"{window_width}x{window_height}")
+
+        x = self.window.winfo_x() + (self.window.winfo_width() - window_width) // 2
+        y = self.window.winfo_y() + (self.window.winfo_height() - window_height) // 2
+
+        self.preview_window.geometry(f"+{x}+{y}")
+        self.preview_window.attributes('-topmost', True)
+
+        resized_image = cv2.resize(rostro, (window_width, window_height - 48))
+
+        image_pil = Image.fromarray(cv2.cvtColor(resized_image, cv2.COLOR_BGR2RGB))
+        photo = ImageTk.PhotoImage(image=image_pil)
+
+        label = tk.Label(self.preview_window, image=photo, bg='white')
+        label.image = photo
+        label.pack()
+
+        btn_guardar = tk.Button(self.preview_window, text="Guardar", command=lambda: self.save_image(rostro), bg='green', fg='white', font=('Arial', 12))
+        btn_guardar.pack(side=tk.LEFT, padx=10, pady=1)
+
+        btn_volver = tk.Button(self.preview_window, text="Volver a Capturar", command=self.close_preview_window, bg='red', fg='white', font=('Arial', 12))
+        btn_volver.pack(side=tk.RIGHT, padx=10, pady=1)
+
+        btn_guardar.bind("<Enter>", lambda event, button=btn_guardar: button.config(bg='light green'))
+        btn_guardar.bind("<Leave>", lambda event, button=btn_guardar: button.config(bg='green'))
+        btn_volver.bind("<Enter>", lambda event, button=btn_volver: button.config(bg='pink'))
+        btn_volver.bind("<Leave>", lambda event, button=btn_volver: button.config(bg='red'))
+
+        btn_guardar.bind("<Button-1>", lambda event, button=btn_guardar: button.config(bg='dark green'))
+        btn_guardar.bind("<ButtonRelease-1>", lambda event, button=btn_guardar: button.config(bg='light green'))
+        btn_volver.bind("<Button-1>", lambda event, button=btn_volver: button.config(bg='dark red'))
+        btn_volver.bind("<ButtonRelease-1>", lambda event, button=btn_volver: button.config(bg='red'))
+
+    def preprocess_image(self, rostro):
+        ycrcb_img = cv2.cvtColor(rostro, cv2.COLOR_BGR2YCrCb)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+        ycrcb_img[:, :, 0] = clahe.apply(ycrcb_img[:, :, 0])
+        processed_image = cv2.cvtColor(ycrcb_img, cv2.COLOR_YCrCb2BGR)
+        return processed_image
+
+    def save_image(self, rostro):
+        etiqueta = self.entry_etiqueta.get().strip()
+
+        if not etiqueta:
+            messagebox.showwarning("Campo vacío", "El campo RFC no puede estar vacío.")
+            self.update_capture_button_color('red')
             return
-        data = self.tabla.item(current_item)
-        self.nombre_borar = data['values'][0]
-   
 
-def main():
-    ventana = Tk()
-    ventana.wm_title("Registro de Datos")
-    ventana.config(bg='gray22')
-    ventana.geometry('900x500')
-    ventana.resizable(0,0)
-    app = Registro(ventana)
-    app.mainloop()
+        if not self.validar_rfc(etiqueta):
+            messagebox.showwarning("RFC inválido", "El RFC debe tener 13 caracteres alfanuméricos.")
+            self.update_capture_button_color('red')
+            return
 
-if __name__=="__main__":
-    main()        
+        etiqueta = etiqueta.strip()
 
+        ruta_imagen = f'{self.directoriorostros}/{etiqueta}.jpg'
+        ruta_pickle = f'{self.directorio_pickle}/{etiqueta}.pickle'
+
+        if os.path.exists(ruta_imagen):
+            confirm = messagebox.askyesno("RFC duplicado", "Ya existe una imagen guardada con este RFC. ¿Desea actualizar la foto?")
+            if not confirm:
+                self.update_capture_button_color('red')
+                return
+
+        if not os.path.exists(self.directoriorostros):
+            os.makedirs(self.directoriorostros)
+
+        if not os.path.exists(self.directorio_pickle):
+            os.makedirs(self.directorio_pickle)
+            
+        rostro = self.preprocess_image(rostro)
+
+        cv2.imwrite(ruta_imagen, rostro)
+
+        embeddings = face_recognition.face_encodings(rostro)
+        if len(embeddings) > 0:
+            with open(ruta_pickle, 'wb') as f:
+                pickle.dump(embeddings[0], f)
+
+            self.contador += 1
+            messagebox.showinfo("Captura Exitosa", "Rostro guardado correctamente.")
+        else:
+            messagebox.showwarning("Error", "No se pudieron obtener embeddings del rostro.")
+
+        self.close_preview_window()
+
+    def close_preview_window(self):
+        if hasattr(self, 'preview_window'):
+            self.preview_window.destroy()
+            self.update_capture_button_color('red')
+
+    def update_capture_button_color(self, color):
+        self.btn_capture.config(bg=color)
+
+    def start_drag(self, event):
+        self.x = event.x
+        self.y = event.y
+
+    def stop_drag(self, event):
+        self.x = None
+        self.y = None
+
+    def on_drag(self, event):
+        deltax = event.x - self.x
+        deltay = event.y - self.y
+        x = self.window.winfo_x() + deltax
+        y = self.window.winfo_y() + deltay
+        self.window.geometry(f"+{x}+{y}")
+
+if __name__ == '__main__':
+    root = tk.Tk()
+    app = App(root)
+    root.mainloop()
